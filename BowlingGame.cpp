@@ -1,10 +1,10 @@
-
 #include <iostream>
 #include <vector>
+using namespace std;
 
 class BowlingGame {
 private:
-    std::vector<int> rolls;
+    vector<int> rolls;
 
 public:
     void roll(int pins) {
@@ -13,55 +13,68 @@ public:
 
     int score() {
         int totalScore = 0;
-        int frameIndex = 0;
+        int rollIndex = 0;
 
         for (int frame = 0; frame < 10; ++frame) {
-            if (isStrike(frameIndex)) {
-                totalScore += 10 + strikeBonus(frameIndex);
-                frameIndex += 1;
-            } else if (isSpare(frameIndex)) {
-                totalScore += 10 + spareBonus(frameIndex);
-                frameIndex += 2;
+            if (isStrike(rollIndex)) {
+                // Strike: 10 + next two rolls
+                totalScore += 10 + rolls[rollIndex + 1] + rolls[rollIndex + 2];
+                rollIndex += 1;
+            } else if (isSpare(rollIndex)) {
+                // Spare: 10 + next roll
+                totalScore += 10 + rolls[rollIndex + 2];
+                rollIndex += 2;
             } else {
-                totalScore += sumOfBallsInFrame(frameIndex);
-                frameIndex += 2;
+                // Normal frame
+                totalScore += rolls[rollIndex] + rolls[rollIndex + 1];
+                rollIndex += 2;
             }
         }
-
         return totalScore;
     }
 
 private:
-    bool isStrike(int index) {
-        return rolls[index] == 10;
+    bool isStrike(int rollIndex) {
+        return rolls[rollIndex] == 10;
     }
 
-    bool isSpare(int index) {
-        return rolls[index] + rolls[index + 1] == 10;
-    }
-
-    int strikeBonus(int index) {
-        return rolls[index + 1] + rolls[index + 2];
-    }
-
-    int spareBonus(int index) {
-        return rolls[index + 2];
-    }
-
-    int sumOfBallsInFrame(int index) {
-        return rolls[index] + rolls[index + 1];
+    bool isSpare(int rollIndex) {
+        return rolls[rollIndex] + rolls[rollIndex + 1] == 10;
     }
 };
 
-// Example usage
 int main() {
     BowlingGame game;
+    cout << "Enter your rolls (frame by frame):\n";
 
-    std::vector<int> sampleRolls = {5, 4, 1, 5, 4, 5, 10, 9, 0, 10, 10, 7, 2, 1, 9, 2, 6};
-    for (int pins : sampleRolls) {
-        game.roll(pins);
+    for (int frame = 1; frame <= 10; ++frame) {
+        int first, second = 0;
+        cout << "Frame " << frame << ":\n";
+        cout << "  First roll: ";
+        cin >> first;
+        game.roll(first);
+
+        if (frame < 10) {
+            if (first != 10) {
+                cout << "  Second roll: ";
+                cin >> second;
+                game.roll(second);
+            }
+        } else {
+            // Frame 10 rules
+            cout << "  Second roll: ";
+            cin >> second;
+            game.roll(second);
+
+            if (first == 10 || (first + second == 10)) {
+                int third;
+                cout << "  Bonus roll (Strike or Spare in 10th frame): ";
+                cin >> third;
+                game.roll(third);
+            }
+        }
     }
 
-    std::cout << "Final Score: " << game.score() << std::endl;
+    cout << "\nTotal score: " << game.score() << endl;
     return 0;
 }
